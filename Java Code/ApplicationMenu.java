@@ -1,22 +1,22 @@
 package com.aspiresys;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ApplicationMenu{
 	Scanner scanner=new Scanner(System.in);
-	public void openApplication() throws SQLException{
-		Admin admin=new Admin();
-		Participant participant=new Participant();
+	Admin admin=new Admin();
+	Participant participant=new Participant();
+	
+	//method for starting menu
+	public void openApplication(){
 		boolean check=true;
 		while(check==true){
-			System.out.println("********** WELCOME **********");
+			System.out.println("----Yo----");
 			System.out.println("Who are you?");
-			System.out.println("1. Admin 😃");
-			System.out.println("2. Participant 😃");
-			System.out.println("3. Logout 👋");
-			System.out.println("Enter your choice: ");
-			System.out.println();
+			System.out.println("1. Admin");
+			System.out.println("2. Participant");
+			System.out.println("3. Logout");
+			System.out.print("Enter your choice: ");
 			int choice=scanner.nextInt();
 			switch(choice){
 			case 1:
@@ -26,9 +26,9 @@ public class ApplicationMenu{
 			case 2:
 				int participantChoice;
 				do {
-					System.out.println("Welcome Participant 😁 Register before starting quiz");
-					System.out.println("1. Participant Register 👈");
-					System.out.println("2. Participant Login 👈");
+					System.out.println("Welcome Participant Register before starting quiz");
+					System.out.println("1. Participant Register");
+					System.out.println("2. Participant Login");
 					System.out.println("Enter your choice: ");
 					participantChoice=scanner.nextInt();
 					switch(participantChoice) {
@@ -39,22 +39,20 @@ public class ApplicationMenu{
 						participant.menuParticipant();
 						break;
 					default:
-						System.err.println("Give correct choice");
+						System.out.println("Give correct choice");
 						break;
 					}
 				}
-				
 				while(participantChoice!=2);
 				check=false;
 				break;
 			case 3:
-				System.out.println("Thank you!");
+				System.out.println("Thank you! Have a Nice Day");
 				check=false;
 				admin.closeConnection();
-				participant.closeConnection();
 				break;
 			default:
-				System.err.println("Give correct choice");
+				System.out.println("Give correct choice");
 				break;
 			}
 		}

@@ -1,0 +1,20 @@
+CREATE DATABASE ForQuiz;
+USE ForQuiz;
+-- to store questions
+CREATE TABLE Questions(Question VARCHAR(150),
+					   Option_1 VARCHAR(50),
+                       Option_2 VARCHAR(50),
+                       Option_3 VARCHAR(50),
+                       Option_4 VARCHAR(50),
+                       Correct_option int);
+-- to store participant details 
+CREATE TABLE Registration(Serial_Number INT PRIMARY KEY AUTO_INCREMENT,
+						  Participant_Name VARCHAR(50),
+                          Participant_password VARCHAR(50));
+-- to store score of the participant
+CREATE TABLE Score(Participant_Name VARCHAR(50),
+				   Total_Score INT);
+SHOW TABLES;
+SELECT * FROM Questions;
+SELECT * FROM Registration;
+SELECT * FROM Score;

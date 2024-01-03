@@ -1,8 +1,6 @@
 package com.aspiresys;
+
 import java.util.Scanner;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -10,33 +8,38 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-//Child class inherits parent class
 public class Admin implements UserInterface{
-	//Used access specifier to declare attributes
     private String adminName;
     private String adminPassword;
+    private String url;
+    private String databaseUser;
+    private String databasePassword;
     private Connection connection;
     private Statement statement;
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
     
+    Scanner scanner = new Scanner(System.in);
+    MyFile myFile=new MyFile();
+    
     public Admin() {
     	try {
-			Class.forName("com.mysql.jdbc.Driver");
-			connection=DriverManager.getConnection("jdbc:mysql://localhost/ForQuiz","root","Aspire@12345");
+    		String[] details = myFile.readQuery();
+    		url=details[0];
+    		databaseUser=details[1];
+    		databasePassword=details[2];
+			connection=DriverManager.getConnection(url,databaseUser,databasePassword);
 		} 
-    	catch (ClassNotFoundException | SQLException exception) {
+    	catch (SQLException exception) {
 			System.out.println("Unable to connect");
-			System.out.println();
-		}		
+		}
     }
-    
-    Scanner scanner = new Scanner(System.in);
     
     //method to add questions to quiz
     public void addQuestion() {    	
     	try {
-			String query="insert into Questions values(?,?,?,?,?,?);";
+    		String[] details = myFile.readQuery();
+			String query=details[3];
 			preparedStatement=connection.prepareStatement(query);
 			System.out.print("How many questions you want to add? ");
 			int questionCount=scanner.nextInt();
@@ -65,21 +68,24 @@ public class Admin implements UserInterface{
 				}
 			}
 			else {
-				System.err.println("No question is added");
+				System.out.println("No question is added");
 			}
 		}
     	catch (SQLException exception) {
-			System.err.println("Wrong input! Give correct input");
+			System.out.println("Wrong input! Give correct input");
 			System.out.println();
 		}
     }
     
+    //method to view questions after added to database
     public void viewQuestion() {
     	try {
+    		String[] details = myFile.readQuery();
+			String query=details[4];
     		statement=connection.createStatement();
-    		resultSet=statement.executeQuery("select Question,Option_1,Option_2,Option_3,Option_4,Correct_option from Questions;");
+    		resultSet=statement.executeQuery(query);
     		int count=0;
-    		System.out.println("\t*****AVAILABLE QUESTIONS *****");
+    		System.out.println("\t***** AVAILABLE QUESTIONS *****");
     		while(resultSet.next()) {
     			count=count+1;
     			System.out.println("Question-"+count+". "+resultSet.getString(1)+"\nOption-1."+
@@ -94,7 +100,7 @@ public class Admin implements UserInterface{
     			System.out.println();
     		}
     		else {
-    			System.err.println("No question available! Please add some questions before you view! ");
+    			System.out.println("No question available! Please add some questions before you view! ");
     			System.out.println();
     		}
 		} 
@@ -104,34 +110,42 @@ public class Admin implements UserInterface{
 		}
     }
     
-    public void deleteQuestion() throws SQLException {
-    	statement=connection.createStatement();
-    	statement.execute("truncate table Questions;");
-		System.out.println("All questions are deleted");
-		System.out.println();
+    //method to remove questions from database
+    public void deleteQuestion() {
+    	try {
+    		String[] details = myFile.readQuery();
+    		String query=details[5];
+        	statement=connection.createStatement();
+        	statement.execute(query);
+    		System.out.println("All questions are deleted");
+    		System.out.println();
+    	}
+    	catch(SQLException exception) {
+    		System.out.println("Not connected well");
+    	}
     }
     
-    //method for administrator to login first to add quiz questions
-    public void login() throws SQLException {
-    	System.out.println("--------------Admin Login--------------");
-        String filePath = "C:\\Java Programs\\AdminDetails.txt"; 
-        String[] details = readFile(filePath);
-        
+    //method for administrator to login first and then add, view, remove quiz questions
+    public void login() {
+    	System.out.println("=======================================");
+    	System.out.println("=             Admin Login             ="); 
+    	System.out.println("=======================================");
+        String[] details = myFile.readFile();
         if (details != null && details.length == 2) {
             String storedName = details[0];
             String storedPassword = details[1];
             System.out.print("Enter admin username: ");
-            adminName = scanner.nextLine();            
+            adminName = scanner.nextLine();
             System.out.print("Enter admin password: ");
             adminPassword = scanner.nextLine();
             int choice;
             if(adminName.equals(storedName) && adminPassword.equals(storedPassword)) {
             	do{
-            		System.out.println("<-- Hi ✋ "+adminName+"! What you want to do -->");
-            		System.out.println("1. Add questions ➕");
-            		System.out.println("2. View questions 👁️");
-            		System.out.println("3. Delete questions 💣");
-            		System.out.println("4. Logout 👋");
+            		System.out.println("<-- Hi "+adminName+"! What you want to do -->");
+            		System.out.println("1. Add questions");
+            		System.out.println("2. View questions");
+            		System.out.println("3. Delete questions");
+            		System.out.println("4. Logout");
             		System.out.print("Enter choice: ");
             		choice = scanner.nextInt();
                     scanner.nextLine();
@@ -146,11 +160,12 @@ public class Admin implements UserInterface{
                     	deleteQuestion();
                     	break;
                     case 4:
-                        System.out.println("------Logout Successful! Thank you "+adminName+" 👋 ------");
+                        System.out.println("------Logout Successful! Thank you "+adminName+"------");
+                        closeConnection();
                         System.out.println();
                     	break;
                     default:
-                    	System.err.println("Give correct menu choice");
+                    	System.out.println("Give correct menu choice");
                         System.out.println();
                     	break;
                     }
@@ -158,28 +173,17 @@ public class Admin implements UserInterface{
             	while(choice!=4);
             }
             else {
-            	System.err.println("Incorrect name or password!");
+            	System.out.println("Incorrect name or password!");
                 System.out.println();
                 login();
             }
         } 
         else {
-            System.err.println("Error reading credentials from file.");
+            System.out.println("Error reading credentials from file.");
         }
     }
     
-    private String[] readFile(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-        	String[] details = new String[2];
-            details[0] = reader.readLine();
-			details[1]= reader.readLine();
-            return details;
-        } catch (IOException e) {
-            System.err.println("Error reading credentials from file: " + e.getMessage());
-            return null;
-        }
-    }
-    
+  //method to close connection
     public void closeConnection() {
     	try {
     		if(connection!=null) {
