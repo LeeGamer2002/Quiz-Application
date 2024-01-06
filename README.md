@@ -7,4 +7,5 @@ Admin able to add, view, remove questions from the database.
 Participant able to take quiz and view their score.
 
 Technnical Skills Used: Java, MySQL, Java Database Connectivity(JDBC)
+
 Application Used: Eclipse 2023, MySQL Workbench 8.2.0
